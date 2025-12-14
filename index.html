@@ -1,117 +1,183 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Registration Page</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f2f2f2;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+<meta charset="UTF-8">
+<title>Online Shopping Store</title>
 
-        .container {
-            background: #fff;
-            width: 350px;
-            padding: 25px;
-            box-shadow: 0 0 12px rgba(0,0,0,0.2);
-            border-radius: 10px;
-        }
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f4f6f9;
+    margin: 0;
+    padding: 0;
+}
 
-        h2 {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+.container {
+    width: 350px;
+    margin: 80px auto;
+    background: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
 
-        label {
-            font-size: 14px;
-            font-weight: bold;
-        }
+h2 {
+    text-align: center;
+}
 
-        input {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0 15px 0;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-        }
+input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
 
-        button {
-            width: 100%;
-            background: #3498db;
-            padding: 10px;
-            border: none;
-            color: #fff;
-            font-size: 16px;
-            border-radius: 8px;
-            cursor: pointer;
-        }
+button {
+    width: 100%;
+    padding: 10px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
 
-        button:hover {
-            background: #2980b9;
-        }
+button:hover {
+    background: #0056b3;
+}
 
-        .error {
-            color: red;
-            font-size: 13px;
-            margin-bottom: 10px;
-        }
-    </style>
+.link {
+    text-align: center;
+    margin-top: 10px;
+    color: #007bff;
+    cursor: pointer;
+}
+
+.dashboard {
+    display: none;
+    padding: 20px;
+}
+
+.header {
+    background: #007bff;
+    color: white;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.products {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px,1fr));
+    gap: 15px;
+    padding: 20px;
+}
+
+.product {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+</style>
 </head>
 
 <body>
 
-<div class="container">
-    <h2>Registration</h2>
+<!-- LOGIN -->
+<div class="container" id="loginBox">
+    <h2>Login</h2>
+    <input type="email" id="loginEmail" placeholder="Email">
+    <input type="password" id="loginPassword" placeholder="Password">
+    <button onclick="login()">Login</button>
+    <div class="link" onclick="showRegister()">New user? Register</div>
+</div>
 
-    <div class="error" id="error"></div>
-
-    <label>Full Name</label>
-    <input type="text" id="name" placeholder="Enter your name">
-
-    <label>Email</label>
-    <input type="email" id="email" placeholder="Enter your email">
-
-    <label>Password</label>
-    <input type="password" id="password" placeholder="Enter password">
-
-    <label>Confirm Password</label>
-    <input type="password" id="confirmPassword" placeholder="Confirm password">
-
+<!-- REGISTER -->
+<div class="container" id="registerBox" style="display:none;">
+    <h2>Register</h2>
+    <input type="text" id="regName" placeholder="Full Name">
+    <input type="email" id="regEmail" placeholder="Email">
+    <input type="password" id="regPassword" placeholder="Password">
     <button onclick="register()">Register</button>
+    <div class="link" onclick="showLogin()">Already have account? Login</div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+    <div class="header">
+        <h3>Online Store Dashboard</h3>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <div class="products">
+        <div class="product">
+            <h4>Mobile</h4>
+            <p>₹15,000</p>
+            <button>Add to Cart</button>
+        </div>
+
+        <div class="product">
+            <h4>Laptop</h4>
+            <p>₹45,000</p>
+            <button>Add to Cart</button>
+        </div>
+
+        <div class="product">
+            <h4>Headphones</h4>
+            <p>₹2,000</p>
+            <button>Add to Cart</button>
+        </div>
+    </div>
 </div>
 
 <script>
-    function register() {
-        let name = document.getElementById("name").value.trim();
-        let email = document.getElementById("email").value.trim();
-        let pass = document.getElementById("password").value;
-        let confirmPass = document.getElementById("confirmPassword").value;
-        let error = document.getElementById("error");
+function showRegister() {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("registerBox").style.display = "block";
+}
 
-        error.innerHTML = ""; // clear error
+function showLogin() {
+    document.getElementById("registerBox").style.display = "none";
+    document.getElementById("loginBox").style.display = "block";
+}
 
-        if (!name || !email || !pass || !confirmPass) {
-            error.innerHTML = "All fields are required.";
-            return;
-        }
+function register() {
+    let email = document.getElementById("regEmail").value;
+    let password = document.getElementById("regPassword").value;
 
-        if (pass.length < 6) {
-            error.innerHTML = "Password must be at least 6 characters.";
-            return;
-        }
-
-        if (pass !== confirmPass) {
-            error.innerHTML = "Passwords do not match.";
-            return;
-        }
-
-        alert("Registration Successful!");
+    if(email === "" || password === "") {
+        alert("Please fill all fields");
+        return;
     }
+
+    localStorage.setItem("email", email);
+    localStorage.setItem("password", password);
+    alert("Registration successful!");
+    showLogin();
+}
+
+function login() {
+    let email = document.getElementById("loginEmail").value;
+    let password = document.getElementById("loginPassword").value;
+
+    let storedEmail = localStorage.getItem("email");
+    let storedPassword = localStorage.getItem("password");
+
+    if(email === storedEmail && password === storedPassword) {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+    } else {
+        alert("Invalid login credentials");
+    }
+}
+
+function logout() {
+    document.getElementById("dashboard").style.display = "none";
+    document.getElementById("loginBox").style.display = "block";
+}
 </script>
 
 </body>

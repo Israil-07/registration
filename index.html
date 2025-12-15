@@ -9,7 +9,6 @@ body {
     font-family: Arial, sans-serif;
     background: #f4f6f9;
     margin: 0;
-    padding: 0;
 }
 
 .container {
@@ -21,7 +20,7 @@ body {
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-h2 {
+h2, h3 {
     text-align: center;
 }
 
@@ -34,8 +33,7 @@ input {
 }
 
 button {
-    width: 100%;
-    padding: 10px;
+    padding: 8px 12px;
     background: #007bff;
     color: white;
     border: none;
@@ -56,7 +54,6 @@ button:hover {
 
 .dashboard {
     display: none;
-    padding: 20px;
 }
 
 .header {
@@ -65,6 +62,7 @@ button:hover {
     padding: 15px;
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 
 .products {
@@ -81,6 +79,24 @@ button:hover {
     text-align: center;
     box-shadow: 0 0 5px rgba(0,0,0,0.1);
 }
+
+.cart {
+    padding: 20px;
+}
+
+.cart ul {
+    list-style: none;
+    padding: 0;
+}
+
+.cart li {
+    background: #fff;
+    margin-bottom: 8px;
+    padding: 8px;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 4px;
+}
 </style>
 </head>
 
@@ -93,6 +109,7 @@ button:hover {
     <input type="password" id="loginPassword" placeholder="Password">
     <button onclick="login()">Login</button>
     <div class="link" onclick="showRegister()">New user? Register</div>
+    <div class="link" onclick="adminLogin()">Admin Login</div>
 </div>
 
 <!-- REGISTER -->
@@ -105,78 +122,147 @@ button:hover {
     <div class="link" onclick="showLogin()">Already have account? Login</div>
 </div>
 
-<!-- DASHBOARD -->
+<!-- USER DASHBOARD -->
 <div class="dashboard" id="dashboard">
     <div class="header">
-        <h3>Online Store Dashboard</h3>
-        <button onclick="logout()">Logout</button>
+        <h3 id="welcomeUser">Dashboard</h3>
+        <div>
+            🛒 <span id="cartCount">0</span>
+            <button onclick="logout()">Logout</button>
+        </div>
     </div>
 
     <div class="products">
         <div class="product">
             <h4>Mobile</h4>
             <p>₹15,000</p>
-            <button>Add to Cart</button>
+            <button onclick="addToCart('Mobile',15000)">Add to Cart</button>
         </div>
 
         <div class="product">
             <h4>Laptop</h4>
             <p>₹45,000</p>
-            <button>Add to Cart</button>
+            <button onclick="addToCart('Laptop',45000)">Add to Cart</button>
         </div>
 
         <div class="product">
             <h4>Headphones</h4>
             <p>₹2,000</p>
-            <button>Add to Cart</button>
+            <button onclick="addToCart('Headphones',2000)">Add to Cart</button>
         </div>
+    </div>
+
+    <div class="cart">
+        <h3>Your Cart</h3>
+        <ul id="cartItems"></ul>
+        <h4>Total: ₹<span id="totalPrice">0</span></h4>
+        <button onclick="checkout()">Checkout</button>
+    </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div class="dashboard" id="adminDashboard">
+    <div class="header">
+        <h3>Admin Dashboard</h3>
+        <button onclick="logout()">Logout</button>
+    </div>
+    <div style="padding:20px;">
+        <h3>Registered User</h3>
+        <p>Email: <span id="adminUser"></span></p>
+        <h4>Products Managed</h4>
+        <ul>
+            <li>Mobile</li>
+            <li>Laptop</li>
+            <li>Headphones</li>
+        </ul>
     </div>
 </div>
 
 <script>
+let cartCount = 0;
+let total = 0;
+
 function showRegister() {
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("registerBox").style.display = "block";
+    loginBox.style.display = "none";
+    registerBox.style.display = "block";
 }
 
 function showLogin() {
-    document.getElementById("registerBox").style.display = "none";
-    document.getElementById("loginBox").style.display = "block";
+    registerBox.style.display = "none";
+    loginBox.style.display = "block";
 }
 
 function register() {
-    let email = document.getElementById("regEmail").value;
-    let password = document.getElementById("regPassword").value;
+    let email = regEmail.value;
+    let password = regPassword.value;
 
     if(email === "" || password === "") {
-        alert("Please fill all fields");
+        alert("Fill all fields");
         return;
     }
 
     localStorage.setItem("email", email);
     localStorage.setItem("password", password);
-    alert("Registration successful!");
+    alert("Registration Successful");
     showLogin();
 }
 
 function login() {
-    let email = document.getElementById("loginEmail").value;
-    let password = document.getElementById("loginPassword").value;
+    let email = loginEmail.value;
+    let password = loginPassword.value;
 
-    let storedEmail = localStorage.getItem("email");
-    let storedPassword = localStorage.getItem("password");
+    if(email === localStorage.getItem("email") &&
+       password === localStorage.getItem("password")) {
 
-    if(email === storedEmail && password === storedPassword) {
-        document.getElementById("loginBox").style.display = "none";
-        document.getElementById("dashboard").style.display = "block";
+        loginBox.style.display = "none";
+        dashboard.style.display = "block";
+        welcomeUser.innerText = "Welcome, " + email;
     } else {
-        alert("Invalid login credentials");
+        alert("Invalid credentials");
     }
 }
 
+function adminLogin() {
+    loginBox.style.display = "none";
+    adminDashboard.style.display = "block";
+    adminUser.innerText = localStorage.getItem("email") || "No User";
+}
+
+function addToCart(item, price) {
+    cartCount++;
+    total += price;
+
+    cartCountSpan = document.getElementById("cartCount");
+    cartCountSpan.innerText = cartCount;
+    totalPrice.innerText = total;
+
+    let li = document.createElement("li");
+    li.innerHTML = item + " - ₹" + price +
+        " <button onclick='removeItem(this,"+price+")'>X</button>";
+    cartItems.appendChild(li);
+}
+
+function removeItem(btn, price) {
+    btn.parentElement.remove();
+    cartCount--;
+    total -= price;
+    cartCountSpan.innerText = cartCount;
+    totalPrice.innerText = total;
+}
+
+function checkout() {
+    alert("Order placed successfully!");
+    cartItems.innerHTML = "";
+    cartCount = 0;
+    total = 0;
+    cartCountSpan.innerText = 0;
+    totalPrice.innerText = 0;
+}
+
 function logout() {
-    document.getElementById("dashboard").style.display = "none";
-    document.getElementById("loginBox").style.display = "block";
+    dashboard.style.display = "none";
+    adminDashboard.style.display = "none";
+    loginBox.style.display = "block";
 }
 </script>
 

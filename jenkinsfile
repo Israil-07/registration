@@ -1,5 +1,6 @@
 pipeline{
     agent any
+    satsges{
         stage('MVN Clean') {
             steps{
                 sh 'mvn clean install '

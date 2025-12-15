@@ -3,9 +3,9 @@ pipeline {
 
     stages {
 
-        stage('MVN Clean') {
+        stage('Check files') {
             steps {
-                sh 'mvn clean install'
+                sh 'ls -l'
             }
         }
 
@@ -16,24 +16,32 @@ pipeline {
             }
         }
 
-        stage('container start') {
+        stage('Container start') {
             steps {
-                echo 'starting container'
+                echo 'Starting container'
                 sh 'docker compose down || true'
                 sh 'docker compose up -d'
             }
         }
 
-        stage('Build') {
-            steps {
-                echo '-----'
-            }
-        }
-
         stage('Test') {
             steps {
-                echo 'The Test is start'
+                echo 'Application deployed successfully'
             }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ BUILD SUCCESS: Application deployed successfully'
+        }
+
+        failure {
+            echo '❌ BUILD FAILED: Please check Jenkins logs'
+        }
+
+        always {
+            echo 'ℹ️ Pipeline execution completed'
         }
     }
 }

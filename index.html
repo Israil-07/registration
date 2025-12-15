@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <title>Online Shopping Store</title>
 
-<!-- BOOTSTRAP CDN -->
+<!-- Bootstrap -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
@@ -15,7 +15,7 @@ body {
 .container-box {
     max-width: 400px;
     margin: 80px auto;
-    background: #fff;
+    background: white;
     padding: 25px;
     border-radius: 10px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.15);
@@ -28,24 +28,20 @@ body {
 .cart {
     background: white;
     padding: 20px;
-    margin-top: 20px;
-    border-radius: 10px;
-    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    margin-top: 25px;
+    border-radius: 12px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.25);
+    transition: transform 0.3s;
 }
 
 .cart:hover {
     transform: scale(1.01);
 }
 
-table th {
-    background: #0d6efd;
-    color: white;
-}
-
-.bill {
-    border-top: 2px dashed #ccc;
-    margin-top: 15px;
-    padding-top: 10px;
+.qty-btn {
+    padding: 2px 8px;
+    margin: 0 5px;
+    font-weight: bold;
 }
 </style>
 </head>
@@ -78,6 +74,7 @@ table th {
         <button class="btn btn-light" onclick="logout()">Logout</button>
     </div>
 
+    <!-- PRODUCTS -->
     <div class="row mt-4">
         <div class="col-md-4">
             <div class="card p-3 shadow">
@@ -105,13 +102,15 @@ table th {
     <!-- CART -->
     <div class="cart">
         <h4>🛒 Cart</h4>
+
         <table class="table table-bordered mt-3">
             <thead>
                 <tr>
                     <th>Sr No</th>
-                    <th>Bill No</th>
                     <th>Product</th>
-                    <th>Amount</th>
+                    <th>Price (₹)</th>
+                    <th>Quantity</th>
+                    <th>Amount (₹)</th>
                 </tr>
             </thead>
             <tbody id="cartBody"></tbody>
@@ -137,7 +136,7 @@ table th {
         <thead>
             <tr>
                 <th>Bill No</th>
-                <th>Total Amount</th>
+                <th>Total</th>
             </tr>
         </thead>
         <tbody id="adminBills"></tbody>
@@ -145,27 +144,28 @@ table th {
 </div>
 
 <script>
-let sr = 0;
-let billNo = Math.floor(Math.random()*100000);
+let cart = {};
 let subtotal = 0;
 
-function showRegister(){loginBox.style.display="none";registerBox.style.display="block";}
-function showLogin(){registerBox.style.display="none";loginBox.style.display="block";}
+function showRegister(){ loginBox.style.display="none"; registerBox.style.display="block"; }
+function showLogin(){ registerBox.style.display="none"; loginBox.style.display="block"; }
 
 function register(){
-    localStorage.setItem("email",regEmail.value);
-    localStorage.setItem("password",regPassword.value);
-    alert("Registered!");
+    localStorage.setItem("email", regEmail.value);
+    localStorage.setItem("password", regPassword.value);
+    alert("Registered successfully!");
     showLogin();
 }
 
 function login(){
-    if(loginEmail.value===localStorage.getItem("email") &&
-       loginPassword.value===localStorage.getItem("password")){
+    if(loginEmail.value === localStorage.getItem("email") &&
+       loginPassword.value === localStorage.getItem("password")){
         loginBox.style.display="none";
         dashboard.style.display="block";
-        welcomeUser.innerText="Welcome "+loginEmail.value;
-    } else alert("Invalid Login");
+        welcomeUser.innerText = "Welcome " + loginEmail.value;
+    } else {
+        alert("Invalid login");
+    }
 }
 
 function adminLogin(){
@@ -174,35 +174,82 @@ function adminLogin(){
     loadBills();
 }
 
-function addToCart(p,price){
-    sr++; subtotal+=price;
-    cartBody.innerHTML+=`<tr><td>${sr}</td><td>#${billNo}</td><td>${p}</td><td>${price}</td></tr>`;
-    calculate();
+function addToCart(product, price){
+    if(cart[product]){
+        cart[product].qty++;
+    } else {
+        cart[product] = { price: price, qty: 1 };
+    }
+    renderCart();
 }
 
-function calculate(){
-    let gst=subtotal*0.18;
-    subTotal.innerText=subtotal;
-    document.getElementById("gst").innerText=gst.toFixed(2);
-    grandTotal.innerText=(subtotal+gst).toFixed(2);
+function increaseQty(product){
+    cart[product].qty++;
+    renderCart();
+}
+
+function decreaseQty(product){
+    cart[product].qty--;
+    if(cart[product].qty <= 0){
+        delete cart[product];
+    }
+    renderCart();
+}
+
+function renderCart(){
+    cartBody.innerHTML = "";
+    subtotal = 0;
+    let sr = 1;
+
+    for(let product in cart){
+        let price = cart[product].price;
+        let qty = cart[product].qty;
+        let amount = price * qty;
+        subtotal += amount;
+
+        cartBody.innerHTML += `
+        <tr>
+            <td>${sr++}</td>
+            <td>${product}</td>
+            <td>${price}</td>
+            <td>
+                <button class="btn btn-sm btn-danger qty-btn" onclick="decreaseQty('${product}')">−</button>
+                ${qty}
+                <button class="btn btn-sm btn-success qty-btn" onclick="increaseQty('${product}')">+</button>
+            </td>
+            <td>${amount}</td>
+        </tr>`;
+    }
+
+    calculateBill();
+}
+
+function calculateBill(){
+    let gst = subtotal * 0.18;
+    subTotal.innerText = subtotal.toFixed(2);
+    document.getElementById("gst").innerText = gst.toFixed(2);
+    grandTotal.innerText = (subtotal + gst).toFixed(2);
 }
 
 function checkout(){
-    let bills=JSON.parse(localStorage.getItem("bills")||"[]");
-    bills.push({bill:billNo,total:grandTotal.innerText});
-    localStorage.setItem("bills",JSON.stringify(bills));
-    alert("Order Placed!");
+    let bills = JSON.parse(localStorage.getItem("bills") || "[]");
+    bills.push({ total: grandTotal.innerText });
+    localStorage.setItem("bills", JSON.stringify(bills));
+
+    alert("✅ Order placed successfully!");
+    cart = {};
+    renderCart();
 }
 
 function loadBills(){
-    let bills=JSON.parse(localStorage.getItem("bills")||"[]");
-    adminBills.innerHTML="";
-    bills.forEach(b=>{
-        adminBills.innerHTML+=`<tr><td>#${b.bill}</td><td>₹${b.total}</td></tr>`;
+    let bills = JSON.parse(localStorage.getItem("bills") || "[]");
+    adminBills.innerHTML = "";
+    bills.forEach((b,i)=>{
+        adminBills.innerHTML += `<tr><td>${i+1}</td><td>₹${b.total}</td></tr>`;
     });
 }
 
-function printInvoice(){window.print();}
+function printInvoice(){ window.print(); }
 
 function logout(){
     dashboard.style.display="none";

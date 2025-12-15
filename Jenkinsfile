@@ -1,21 +1,23 @@
-pipeline{
+pipeline {
     agent any
-    satsges{
+
+    stages {
+
         stage('MVN Clean') {
-            steps{
-                sh 'mvn clean install '
+            steps {
+                sh 'mvn clean install'
             }
         }
 
         stage('Docker compose build') {
-            steps{
+            steps {
                 echo 'Building services using docker compose'
                 sh 'docker compose build'
             }
         }
 
         stage('container start') {
-            steps{
+            steps {
                 echo 'starting container'
                 sh 'docker compose down || true'
                 sh 'docker compose up -d'
@@ -23,15 +25,15 @@ pipeline{
         }
 
         stage('Build') {
-            steps{
+            steps {
                 echo '-----'
             }
         }
-        
+
         stage('Test') {
-            steps{
+            steps {
                 echo 'The Test is start'
             }
         }
-    }  
+    }
 }

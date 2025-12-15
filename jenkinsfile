@@ -1,13 +1,5 @@
 pipeline{
     agent any
-    stages{
-
-        stage('git configure') {
-            steps{
-                git 'https://github.com/Israil-07/registration.git'
-            }
-        }
-
         stage('MVN Clean') {
             steps{
                 sh 'mvn clean install '
